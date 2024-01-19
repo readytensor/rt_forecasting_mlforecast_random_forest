@@ -1,0 +1,8 @@
+{
+  "n_estimators": 100,
+  "criterion": "squared_error",
+  "history_forecast_ratio": 20,
+  "lags_forecast_ratio": 3,
+  "use_exogenous": true,
+  "random_state": 0
+}
