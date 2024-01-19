@@ -3,6 +3,7 @@
   "criterion": "squared_error",
   "history_forecast_ratio": 20,
   "lags_forecast_ratio": 3,
+  "max_depth": 6,
   "use_exogenous": true,
   "random_state": 0
 }
