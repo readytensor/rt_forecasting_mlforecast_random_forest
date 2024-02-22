@@ -147,6 +147,28 @@ class Forecaster:
         else:
             return 1
 
+    def _validate_lags_and_history_length(self, series_length: int):
+        """
+        Validate the value of lags and that history length is at least double the forecast horizon.
+        If the provided lags value is invalid (too large), lags are set to the largest possible value.
+
+        Args:
+            series_length (int): The length of the history.
+
+        Returns: None
+        """
+        forecast_length = self.data_schema.forecast_length
+        if series_length < 2 * forecast_length:
+            raise ValueError(
+                f"Training series is too short. History should be at least double the forecast horizon. history_length = ({series_length}), forecast horizon = ({forecast_length})"
+            )
+
+        if self.lags[-1] >= series_length:
+            self.lags = [i for i in range(1, series_length)]
+            logger.warning(
+                f"The provided lags value >= available history length. Lags are set to to (history length - 1) = {series_length-1}"
+            )
+
     def prepare_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Prepares the training data by dropping past covariates, converting the index to datetime if available
@@ -179,16 +201,6 @@ class Forecaster:
             if self.data_schema.static_covariates:
                 data.drop(columns=self.data_schema.static_covariates, inplace=True)
 
-        series_length = (
-            data.groupby(self.data_schema.id_col)[self.data_schema.target]
-            .count()
-            .iloc[0]
-        )
-        if series_length < 2 * self.data_schema.forecast_length:
-            raise ValueError(
-                f"Training series is too short. History should be at least double the forecast horizon. history_length = ({series_length}), forecast horizon = ({self.data_schema.forecast_length})"
-            )
-
         return data
 
     def fit(
@@ -209,6 +221,14 @@ class Forecaster:
             static_features = []
 
         history = self.prepare_data(history)
+
+        series_length = (
+            history.groupby(self.data_schema.id_col)[self.data_schema.target]
+            .count()
+            .iloc[0]
+        )
+
+        self._validate_lags_and_history_length(series_length=series_length)
 
         if self.lags[-1] > len(history):
             self.lags = [i for i in range(1, len(history))]
