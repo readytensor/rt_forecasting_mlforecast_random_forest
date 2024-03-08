@@ -53,35 +53,37 @@ def run_training(
     """
 
     try:
-        logger.info("Starting training...")
-        # load and save schema
-        logger.info("Loading and saving schema...")
-        data_schema = load_json_data_schema(input_schema_dir)
-        save_schema(schema=data_schema, save_dir_path=saved_schema_dir_path)
-
-        # load model config
-        logger.info("Loading model config...")
-        model_config = read_json_as_dict(model_config_file_path)
-
-        # set seeds
-        logger.info("Setting seeds...")
-        set_seeds(seed_value=model_config["seed_value"])
-
-        # load train data
-        logger.info("Loading train data...")
-        train_data = read_csv_in_directory(train_dir)
-
-        # validate the data
-        logger.info("Validating train data...")
-        validated_data = validate_data(
-            data=train_data, data_schema=data_schema, is_train=True
-        )
-
-        # use default hyperparameters to train model
-        logger.info("Training forecaster...")
-        default_hyperparameters = read_json_as_dict(default_hyperparameters_file_path)
-
         with TimeAndMemoryTracker(logger) as _:
+            logger.info("Starting training...")
+            # load and save schema
+            logger.info("Loading and saving schema...")
+            data_schema = load_json_data_schema(input_schema_dir)
+            save_schema(schema=data_schema, save_dir_path=saved_schema_dir_path)
+
+            # load model config
+            logger.info("Loading model config...")
+            model_config = read_json_as_dict(model_config_file_path)
+
+            # set seeds
+            logger.info("Setting seeds...")
+            set_seeds(seed_value=model_config["seed_value"])
+
+            # load train data
+            logger.info("Loading train data...")
+            train_data = read_csv_in_directory(train_dir)
+
+            # validate the data
+            logger.info("Validating train data...")
+            validated_data = validate_data(
+                data=train_data, data_schema=data_schema, is_train=True
+            )
+
+            # use default hyperparameters to train model
+            logger.info("Training forecaster...")
+            default_hyperparameters = read_json_as_dict(
+                default_hyperparameters_file_path
+            )
+
             forecaster = train_predictor_model(
                 history=validated_data,
                 data_schema=data_schema,
